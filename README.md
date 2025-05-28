@@ -53,3 +53,33 @@ curl "http://localhost:3000/api/glossary/search?domain=%E8%BF%B7%E5%A2%83"
 # 带格式化输出的版本（domain="迷境"，推荐，更易读）
 curl "http://localhost:3000/api/glossary/search?domain=%E8%BF%B7%E5%A2%83" | jq
 ```
+
+
+
+## 本地启动Team Evolve
+
+**本地环境：**MAC arm系列
+
+**前置依赖：**安装了docker或者其他容器引擎、安装了docker-compose、MAC要联网（需要从docker hub获取镜像）、安装了cmake
+
+以容器的方式启动redis与postgresql，数据分别被持久化到`/var/lib/docker/volumes/docker-compose_postgres_data`与`/var/lib/docker/volumes/docker-compose_postgres_data`中。
+
+由于mac中的容器引擎都是运行在VM中的，所以`/var/lib/docker/volumes/`是vm中的路径，需要在mac中 先进入到容器引擎所在vm中才能看到redis与postgresql的数据文件。
+
+**1，启动team evolve**
+
+```shell
+make build
+sudo make run WHERE=local
+```
+
+**2， 初始化帐号信息**
+
+```shell
+# 在本地执行下面的命令，添加测试用帐号 admin ,密码为 teamevolve
+docker exec docker-compose-postgres-1 psql -U evolve_user -d team_evolve -c "INSERT INTO \"User\" (id, email, name, password, role, \"createdAt\", \"updatedAt\") VALUES (gen_random_uuid(),'admin@team-evolve.com','admin','IUjFeVv_bBdLDRIfL5LF4kNoe2j1xrEyGhHDpY6na3zgd7b7zU8','ADMIN',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP) ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password,role = EXCLUDED.role,\"updatedAt\" = CURRENT_TIMESTAMP;"
+```
+
+**3，访问系统**
+
+ 浏览器打开 http://localhost:3000/  , 使用admin@team-evolve.com  / teamevolve登陆。
